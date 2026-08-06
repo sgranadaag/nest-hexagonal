@@ -60,7 +60,7 @@ src/
 | `filter` | `httpException.filter.ts` |
 | `util` | `generateId.util.ts` |
 | `schema` | `errorResponse.schema.ts` |
-| `spec` | `library.entity.spec.ts` (Jest convention, not `.test.ts`) |
+| `test` | `library.entity.test.ts` |
 
 ## Path aliases
 
@@ -100,7 +100,10 @@ NestJS-native DI — no hand-written composition root file. Each aggregate's `<n
 
 ## Testing
 
-- Representative unit specs live under `src/tests/<module>/`, mirroring the module they cover (e.g. `tests/library/library.entity.spec.ts`), imported via the `@modules` alias rather than deep relative paths.
+- Unit tests live under `src/tests/<module>/<name>.<role>.test.ts`, one folder per aggregate (`tests/library/`, `tests/author/`, `tests/book/`), imported via the `@modules` alias rather than deep relative paths. Jest's `testRegex` matches `.test.ts` — not `.spec.ts`.
+- **Scope: business logic only** — `domain` (entities, Value Objects) and `application` (use cases). Infrastructure (controllers, DTOs, repository adapters) and cross-cutting middleware/utils are exercised through the e2e suite instead, not unit-tested directly — they're thin/framework glue, not business rules.
+- Use case tests mock the repository port(s) (and `Cache` where injected) with plain object literals of named `jest.fn()`s — not `jest.Mocked<Interface>` directly, since asserting on a bare method reference off an interface-typed object trips `@typescript-eslint/unbound-method`. `Cache`'s methods are property-typed (arrow-style), so this doesn't apply to cache mocks.
+- Cross-aggregate rules (e.g. `CreateBookUseCase` rule 1) are tested by asserting the `NotFoundException` path when the injected `ILibraryRepository`/`IAuthorRepository` mock returns `null`, not by spinning up real repositories.
 - e2e specs live in `test/*.e2e-spec.ts`, boot the real `AppModule` via `Test.createTestingModule`, and apply the same global `ValidationPipe` main.ts uses.
 - Run `npm test` (unit) and `npm run test:e2e` before considering a change done, alongside `npm run build` and `npm run lint`.
 
