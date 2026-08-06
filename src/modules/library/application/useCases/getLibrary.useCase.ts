@@ -1,8 +1,8 @@
 ﻿import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Library } from '@modules/library/domain/entities/library.entity';
-import { LIBRARY_REPOSITORY } from '@modules/library/application/interfaces/libraryRepository.interface';
-import type { ILibraryRepository } from '@modules/library/application/interfaces/libraryRepository.interface';
+import { LIBRARY_REPOSITORY } from '@modules/library/application/ports/libraryRepository.interface';
+import type { ILibraryRepository } from '@modules/library/application/ports/libraryRepository.interface';
 import { buildCacheKey } from '@utils/cacheKey.util';
 
 const CACHE_NAMESPACE = 'library';

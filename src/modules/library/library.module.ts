@@ -3,8 +3,8 @@ import { LibraryController } from './infrastructure/presentation/library.control
 import { CreateLibraryUseCase } from './application/useCases/createLibrary.useCase';
 import { GetLibraryUseCase } from './application/useCases/getLibrary.useCase';
 import { DeleteLibraryUseCase } from './application/useCases/deleteLibrary.useCase';
-import { InMemoryLibraryRepository } from './infrastructure/repositories/inMemoryLibrary.repository';
-import { LIBRARY_REPOSITORY } from './application/interfaces/libraryRepository.interface';
+import { InMemoryLibraryRepository } from './infrastructure/adapters/inMemoryLibrary.repository';
+import { LIBRARY_REPOSITORY } from './application/ports/libraryRepository.interface';
 
 @Module({
   controllers: [LibraryController],

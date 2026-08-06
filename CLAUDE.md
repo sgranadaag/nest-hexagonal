@@ -22,10 +22,10 @@ src/
 │   │   │   ├── entities/          # library.entity.ts (Aggregate Root)
 │   │   │   └── valueObjects/      # libraryId.valueObject.ts, address.valueObject.ts
 │   │   ├── application/
-│   │   │   ├── interfaces/        # libraryRepository.interface.ts — ILibraryRepository (port) + LIBRARY_REPOSITORY token
-│   │   │   └── useCases/          # createLibrary.useCase.ts, getLibrary.useCase.ts, deleteLibrary.useCase.ts
+│   │   │   ├── ports/          # libraryRepository.interface.ts — ILibraryRepository (port) + LIBRARY_REPOSITORY token
+│   │   │   └── useCases/       # createLibrary.useCase.ts, getLibrary.useCase.ts, deleteLibrary.useCase.ts
 │   │   ├── infrastructure/
-│   │   │   ├── repositories/      # inMemoryLibrary.repository.ts (adapter)
+│   │   │   ├── adapters/       # inMemoryLibrary.repository.ts (adapter)
 │   │   │   └── presentation/
 │   │   │       ├── library.controller.ts
 │   │   │       └── dto/           # createLibrary.dto.ts (request), libraryResponse.dto.ts (response)
@@ -62,6 +62,8 @@ src/
 | `schema` | `errorResponse.schema.ts` |
 | `test` | `library.entity.test.ts` |
 
+Folder location and file-suffix role are independent: port files keep the `.interface.ts` suffix but live in `application/ports/`; repository adapter files keep the `.repository.ts` suffix but live in `infrastructure/adapters/`.
+
 ## Path aliases
 
 `tsconfig.json` defines one alias per top-level `src/` folder: `@modules/*`, `@middlewares/*`, `@utils/*`, `@schemas/*`, `@tests/*`.
@@ -87,11 +89,11 @@ NestJS-native DI — no hand-written composition root file. Each aggregate's `<n
 1. Aggregates reference other aggregates by ID only (e.g. `Book.libraryId: LibraryId`), never by direct object reference. Cross-aggregate existence checks happen in the use case, injecting the other aggregate's repository directly — same bounded context, no anti-corruption layer needed.
 2. Value Objects are immutable: no setters, only `get()` and static factories (`create()` for a new instance, `from()` to wrap an existing value, `reconstitute()` on the entity to rehydrate from storage without minting a new id).
 3. Aggregate Roots enforce their own invariants through methods (e.g. `Address.isValid()`, checked inside `Address.create()`). No public setters that bypass business rules.
-4. Repository ports live in `application/interfaces/`, one per aggregate, named `I<Aggregate>Repository`, exporting its `<AGGREGATE>_REPOSITORY` Symbol token from the same file. Keep each interface unsplit (single interface, all methods) unless a real adapter genuinely can't implement one of them.
+4. Repository ports live in `application/ports/`, one per aggregate, named `I<Aggregate>Repository`, exporting its `<AGGREGATE>_REPOSITORY` Symbol token from the same file. Keep each interface unsplit (single interface, all methods) unless a real adapter genuinely can't implement one of them.
 5. Use cases are single-purpose: one class per operation (`Create...UseCase`, `Get...UseCase`, `Delete...UseCase`, `Get...By...UseCase`), each with one `execute()` method. No generic catch-all services.
 6. "Get single entity" use cases look up by ID (`find`), not by name/title.
 7. Controllers accept and return DTOs (`infrastructure/presentation/dto/`), never the domain aggregate directly. Mapping happens only at the controller boundary (`ResponseDto.fromDomain(entity)`).
-8. Every repository port gets one adapter per active persistence technology, bound via the module's `providers` array — never chosen inside a use case. **Current phase**: a single `InMemory<Aggregate>Repository` per aggregate stands in for real persistence. **Next phase**: `Postgres<Aggregate>Repository` and `Mongo<Aggregate>Repository`, with the active one selected via config in the module (not hand-rolled naming for adapters that don't do what their name says).
+8. Every repository port gets one adapter per active persistence technology, living in `infrastructure/adapters/`, bound via the module's `providers` array — never chosen inside a use case. **Current phase**: a single `InMemory<Aggregate>Repository` per aggregate stands in for real persistence. **Next phase**: `Postgres<Aggregate>Repository` and `Mongo<Aggregate>Repository`, with the active one selected via config in the module (not hand-rolled naming for adapters that don't do what their name says).
 9. Only wrap a dependency in an interface/DI token when it crosses an I/O boundary or needs a test double (repositories, external gateways, cache). Pure deterministic domain logic stays a plain class or function, injected/called directly, no interface — this includes id generation (`utils/generateId.util.ts`, a plain `crypto.randomUUID()` wrapper called inside each id Value Object's static `create()`), which stays synchronous and undecorated per the UML class diagrams.
 10. Dependency direction: `infrastructure` → `application` → `domain`. `domain` never imports from the other two, and never imports a framework package (no `@nestjs/*` in `domain/`).
 11. Use cases signal failure by throwing Nest's built-in HTTP exceptions directly (`NotFoundException`, etc.) — no parallel domain-exception hierarchy. The global `HttpExceptionFilter` (`middlewares/httpException.filter.ts`) normalizes every thrown error, HTTP or not, into the shared `ErrorResponseSchema` shape (`schemas/errorResponse.schema.ts`).

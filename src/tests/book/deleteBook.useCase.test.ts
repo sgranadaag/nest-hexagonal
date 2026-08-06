@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import type { Cache } from '@nestjs/cache-manager';
 import { DeleteBookUseCase } from '@modules/book/application/useCases/deleteBook.useCase';
-import { IBookRepository } from '@modules/book/application/interfaces/bookRepository.interface';
+import { IBookRepository } from '@modules/book/application/ports/bookRepository.interface';
 import { Book } from '@modules/book/domain/entities/book.entity';
 
 describe('DeleteBookUseCase', () => {

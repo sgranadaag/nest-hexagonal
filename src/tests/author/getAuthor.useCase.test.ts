@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import type { Cache } from '@nestjs/cache-manager';
 import { GetAuthorUseCase } from '@modules/author/application/useCases/getAuthor.useCase';
-import { IAuthorRepository } from '@modules/author/application/interfaces/authorRepository.interface';
+import { IAuthorRepository } from '@modules/author/application/ports/authorRepository.interface';
 import { Author } from '@modules/author/domain/entities/author.entity';
 
 describe('GetAuthorUseCase', () => {

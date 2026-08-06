@@ -1,5 +1,5 @@
 import { GetBookByLibraryUseCase } from '@modules/book/application/useCases/getBookByLibrary.useCase';
-import { IBookRepository } from '@modules/book/application/interfaces/bookRepository.interface';
+import { IBookRepository } from '@modules/book/application/ports/bookRepository.interface';
 import { Book } from '@modules/book/domain/entities/book.entity';
 
 describe('GetBookByLibraryUseCase', () => {

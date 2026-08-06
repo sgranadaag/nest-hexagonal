@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { Author } from '@modules/author/domain/entities/author.entity';
-import { IAuthorRepository } from '@modules/author/application/interfaces/authorRepository.interface';
+import { IAuthorRepository } from '@modules/author/application/ports/authorRepository.interface';
 
 @Injectable()
 export class InMemoryAuthorRepository implements IAuthorRepository {

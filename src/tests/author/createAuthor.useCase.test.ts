@@ -1,5 +1,5 @@
 import { CreateAuthorUseCase } from '@modules/author/application/useCases/createAuthor.useCase';
-import { IAuthorRepository } from '@modules/author/application/interfaces/authorRepository.interface';
+import { IAuthorRepository } from '@modules/author/application/ports/authorRepository.interface';
 import { Author } from '@modules/author/domain/entities/author.entity';
 
 describe('CreateAuthorUseCase', () => {

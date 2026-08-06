@@ -1,11 +1,11 @@
 ﻿import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Book } from '@modules/book/domain/entities/book.entity';
-import { BOOK_REPOSITORY } from '@modules/book/application/interfaces/bookRepository.interface';
-import type { IBookRepository } from '@modules/book/application/interfaces/bookRepository.interface';
-import { LIBRARY_REPOSITORY } from '@modules/library/application/interfaces/libraryRepository.interface';
-import type { ILibraryRepository } from '@modules/library/application/interfaces/libraryRepository.interface';
-import { AUTHOR_REPOSITORY } from '@modules/author/application/interfaces/authorRepository.interface';
-import type { IAuthorRepository } from '@modules/author/application/interfaces/authorRepository.interface';
+import { BOOK_REPOSITORY } from '@modules/book/application/ports/bookRepository.interface';
+import type { IBookRepository } from '@modules/book/application/ports/bookRepository.interface';
+import { LIBRARY_REPOSITORY } from '@modules/library/application/ports/libraryRepository.interface';
+import type { ILibraryRepository } from '@modules/library/application/ports/libraryRepository.interface';
+import { AUTHOR_REPOSITORY } from '@modules/author/application/ports/authorRepository.interface';
+import type { IAuthorRepository } from '@modules/author/application/ports/authorRepository.interface';
 
 @Injectable()
 export class CreateBookUseCase {

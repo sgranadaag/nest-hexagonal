@@ -86,48 +86,6 @@ referenced `Library` and `Author` actually exist — happens in
 because it's all one bounded context; just a use case checking two ports
 before it constructs the entity.
 
-## How the pieces communicate
-
-Here's the full `POST /books` flow end to end, which touches every layer
-and both non-negotiable rules above (ports/adapters, and reference-by-id
-cross-aggregate checks):
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Controller as BookController
-    participant UseCase as CreateBookUseCase
-    participant LibPort as ILibraryRepository (port)
-    participant AuthPort as IAuthorRepository (port)
-    participant BookPort as IBookRepository (port)
-    participant Entity as Book (domain)
-
-    Client->>Controller: POST /books { title, description, authorId, libraryId }
-    Controller->>Controller: ValidationPipe checks CreateBookDto
-    Controller->>UseCase: execute(title, description, authorId, libraryId)
-    UseCase->>LibPort: find(libraryId)
-    LibPort-->>UseCase: Library | null
-    UseCase->>AuthPort: find(authorId)
-    AuthPort-->>UseCase: Author | null
-    alt library or author not found
-        UseCase-->>Controller: throws NotFoundException
-        Controller-->>Client: 404 via HttpExceptionFilter
-    else both exist
-        UseCase->>Entity: Book.create(title, description, authorId, libraryId)
-        Entity-->>UseCase: Book (with a freshly generated BookId)
-        UseCase->>BookPort: save(book)
-        BookPort-->>UseCase: Book
-        UseCase-->>Controller: Book
-        Controller->>Controller: BookResponseDto.fromDomain(book)
-        Controller-->>Client: 201 BookResponseDto
-    end
-```
-
-The controller and use case only ever talk to `LibPort`/`AuthPort`/`BookPort`
-— the interfaces. Which concrete class answers `find()` or `save()`
-(`InMemoryBookRepository` today) is decided once, in `book.module.ts`, and
-is invisible to everything above this diagram.
-
 ## Package structure
 
 ![Package diagram](docs/architecture.diagram.png)

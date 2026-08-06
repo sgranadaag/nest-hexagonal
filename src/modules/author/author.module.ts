@@ -3,8 +3,8 @@ import { AuthorController } from './infrastructure/presentation/author.controlle
 import { CreateAuthorUseCase } from './application/useCases/createAuthor.useCase';
 import { GetAuthorUseCase } from './application/useCases/getAuthor.useCase';
 import { DeleteAuthorUseCase } from './application/useCases/deleteAuthor.useCase';
-import { InMemoryAuthorRepository } from './infrastructure/repositories/inMemoryAuthor.repository';
-import { AUTHOR_REPOSITORY } from './application/interfaces/authorRepository.interface';
+import { InMemoryAuthorRepository } from './infrastructure/adapters/inMemoryAuthor.repository';
+import { AUTHOR_REPOSITORY } from './application/ports/authorRepository.interface';
 
 @Module({
   controllers: [AuthorController],

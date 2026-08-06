@@ -7,8 +7,8 @@ import { GetBookUseCase } from './application/useCases/getBook.useCase';
 import { GetBookByAuthorUseCase } from './application/useCases/getBookByAuthor.useCase';
 import { GetBookByLibraryUseCase } from './application/useCases/getBookByLibrary.useCase';
 import { DeleteBookUseCase } from './application/useCases/deleteBook.useCase';
-import { InMemoryBookRepository } from './infrastructure/repositories/inMemoryBook.repository';
-import { BOOK_REPOSITORY } from './application/interfaces/bookRepository.interface';
+import { InMemoryBookRepository } from './infrastructure/adapters/inMemoryBook.repository';
+import { BOOK_REPOSITORY } from './application/ports/bookRepository.interface';
 
 @Module({
   imports: [LibraryModule, AuthorModule],

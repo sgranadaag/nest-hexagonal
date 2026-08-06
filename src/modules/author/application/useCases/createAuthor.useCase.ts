@@ -1,7 +1,7 @@
 ﻿import { Inject, Injectable } from '@nestjs/common';
 import { Author } from '@modules/author/domain/entities/author.entity';
-import { AUTHOR_REPOSITORY } from '@modules/author/application/interfaces/authorRepository.interface';
-import type { IAuthorRepository } from '@modules/author/application/interfaces/authorRepository.interface';
+import { AUTHOR_REPOSITORY } from '@modules/author/application/ports/authorRepository.interface';
+import type { IAuthorRepository } from '@modules/author/application/ports/authorRepository.interface';
 
 @Injectable()
 export class CreateAuthorUseCase {

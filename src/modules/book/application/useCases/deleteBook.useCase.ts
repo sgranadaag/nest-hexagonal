@@ -1,7 +1,7 @@
 ﻿import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { BOOK_REPOSITORY } from '@modules/book/application/interfaces/bookRepository.interface';
-import type { IBookRepository } from '@modules/book/application/interfaces/bookRepository.interface';
+import { BOOK_REPOSITORY } from '@modules/book/application/ports/bookRepository.interface';
+import type { IBookRepository } from '@modules/book/application/ports/bookRepository.interface';
 import { buildCacheKey } from '@utils/cacheKey.util';
 
 const CACHE_NAMESPACE = 'book';

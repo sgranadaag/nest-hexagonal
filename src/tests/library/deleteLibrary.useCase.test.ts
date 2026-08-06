@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import type { Cache } from '@nestjs/cache-manager';
 import { DeleteLibraryUseCase } from '@modules/library/application/useCases/deleteLibrary.useCase';
-import { ILibraryRepository } from '@modules/library/application/interfaces/libraryRepository.interface';
+import { ILibraryRepository } from '@modules/library/application/ports/libraryRepository.interface';
 import { Library } from '@modules/library/domain/entities/library.entity';
 
 describe('DeleteLibraryUseCase', () => {
