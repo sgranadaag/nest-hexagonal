@@ -1,5 +1,5 @@
 import { CreateLibraryUseCase } from '@modules/library/application/useCases/createLibrary.useCase';
-import { ILibraryRepository } from '@modules/library/application/ports/libraryRepository.interface';
+import { ILibraryRepository } from '@modules/library/application/ports/out/libraryRepository.port';
 import { Library } from '@modules/library/domain/entities/library.entity';
 
 describe('CreateLibraryUseCase', () => {

@@ -1,8 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { CreateBookUseCase } from '@modules/book/application/useCases/createBook.useCase';
-import { IBookRepository } from '@modules/book/application/ports/bookRepository.interface';
-import { ILibraryRepository } from '@modules/library/application/ports/libraryRepository.interface';
-import { IAuthorRepository } from '@modules/author/application/ports/authorRepository.interface';
+import { IBookRepository } from '@modules/book/application/ports/out/bookRepository.port';
+import { ILibraryRepository } from '@modules/library/application/ports/out/libraryRepository.port';
+import { IAuthorRepository } from '@modules/author/application/ports/out/authorRepository.port';
 import { Book } from '@modules/book/domain/entities/book.entity';
 import { Library } from '@modules/library/domain/entities/library.entity';
 import { Author } from '@modules/author/domain/entities/author.entity';
