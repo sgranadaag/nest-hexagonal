@@ -1,6 +1,6 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Book } from '@modules/book/domain/entities/book.entity';
-import { IBookRepository } from '@modules/book/application/ports/bookRepository.interface';
+import { IBookRepository } from '@modules/book/application/ports/out/bookRepository.port';
 
 @Injectable()
 export class InMemoryBookRepository implements IBookRepository {

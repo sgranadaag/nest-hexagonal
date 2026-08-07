@@ -1,10 +1,11 @@
-﻿import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Library } from '@modules/library/domain/entities/library.entity';
-import { LIBRARY_REPOSITORY } from '@modules/library/application/ports/libraryRepository.interface';
-import type { ILibraryRepository } from '@modules/library/application/ports/libraryRepository.interface';
+import { LIBRARY_REPOSITORY } from '@modules/library/application/ports/out/libraryRepository.port';
+import type { ILibraryRepository } from '@modules/library/application/ports/out/libraryRepository.port';
+import type { ICreateLibraryUseCase } from '@modules/library/application/ports/in/createLibrary.port';
 
 @Injectable()
-export class CreateLibraryUseCase {
+export class CreateLibraryUseCase implements ICreateLibraryUseCase {
   constructor(
     @Inject(LIBRARY_REPOSITORY)
     private readonly libraryRepository: ILibraryRepository,

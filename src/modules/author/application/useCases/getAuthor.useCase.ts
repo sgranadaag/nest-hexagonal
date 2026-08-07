@@ -1,14 +1,15 @@
-﻿import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Author } from '@modules/author/domain/entities/author.entity';
-import { AUTHOR_REPOSITORY } from '@modules/author/application/ports/authorRepository.interface';
-import type { IAuthorRepository } from '@modules/author/application/ports/authorRepository.interface';
+import { AUTHOR_REPOSITORY } from '@modules/author/application/ports/out/authorRepository.port';
+import type { IAuthorRepository } from '@modules/author/application/ports/out/authorRepository.port';
 import { buildCacheKey } from '@utils/cacheKey.util';
+import type { IGetAuthorUseCase } from '@modules/author/application/ports/in/getAuthor.port';
 
 const CACHE_NAMESPACE = 'author';
 
 @Injectable()
-export class GetAuthorUseCase {
+export class GetAuthorUseCase implements IGetAuthorUseCase {
   constructor(
     @Inject(AUTHOR_REPOSITORY)
     private readonly authorRepository: IAuthorRepository,

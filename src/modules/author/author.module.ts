@@ -1,18 +1,26 @@
 import { Module } from '@nestjs/common';
-import { AuthorController } from './infrastructure/presentation/author.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthorController } from './infrastructure/adapters/in/rest/author.controller';
 import { CreateAuthorUseCase } from './application/useCases/createAuthor.useCase';
 import { GetAuthorUseCase } from './application/useCases/getAuthor.useCase';
 import { DeleteAuthorUseCase } from './application/useCases/deleteAuthor.useCase';
-import { InMemoryAuthorRepository } from './infrastructure/adapters/inMemoryAuthor.repository';
-import { AUTHOR_REPOSITORY } from './application/ports/authorRepository.interface';
+import { InMemoryAuthorRepository } from './infrastructure/adapters/out/inMemory/inMemoryAuthor.repository';
+import { PostgresAuthorEntity } from './infrastructure/adapters/out/postgres/postgresAuthor.entity';
+import { PostgresAuthorRepository } from './infrastructure/adapters/out/postgres/postgresAuthor.repository';
+import { AUTHOR_REPOSITORY } from './application/ports/out/authorRepository.port';
+import { CREATE_AUTHOR_USE_CASE } from './application/ports/in/createAuthor.port';
+import { GET_AUTHOR_USE_CASE } from './application/ports/in/getAuthor.port';
+import { DELETE_AUTHOR_USE_CASE } from './application/ports/in/deleteAuthor.port';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([PostgresAuthorEntity])],
   controllers: [AuthorController],
   providers: [
-    CreateAuthorUseCase,
-    GetAuthorUseCase,
-    DeleteAuthorUseCase,
-    { provide: AUTHOR_REPOSITORY, useClass: InMemoryAuthorRepository },
+    InMemoryAuthorRepository,
+    { provide: AUTHOR_REPOSITORY, useClass: PostgresAuthorRepository },
+    { provide: CREATE_AUTHOR_USE_CASE, useClass: CreateAuthorUseCase },
+    { provide: GET_AUTHOR_USE_CASE, useClass: GetAuthorUseCase },
+    { provide: DELETE_AUTHOR_USE_CASE, useClass: DeleteAuthorUseCase },
   ],
   exports: [AUTHOR_REPOSITORY],
 })

@@ -19,7 +19,9 @@
       "@middlewares/*": ["src/middlewares/*"],
       "@utils/*": ["src/utils/*"],
       "@schemas/*": ["src/schemas/*"],
-      "@tests/*": ["src/tests/*"]
+      "@tests/*": ["src/tests/*"],
+      "@config/*": ["src/config/*"],
+      "@constants/*": ["src/constants/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -1,6 +1,6 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Library } from '@modules/library/domain/entities/library.entity';
-import { ILibraryRepository } from '@modules/library/application/ports/libraryRepository.interface';
+import { ILibraryRepository } from '@modules/library/application/ports/out/libraryRepository.port';
 
 @Injectable()
 export class InMemoryLibraryRepository implements ILibraryRepository {

@@ -1,13 +1,14 @@
-﻿import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { BOOK_REPOSITORY } from '@modules/book/application/ports/bookRepository.interface';
-import type { IBookRepository } from '@modules/book/application/ports/bookRepository.interface';
+import { BOOK_REPOSITORY } from '@modules/book/application/ports/out/bookRepository.port';
+import type { IBookRepository } from '@modules/book/application/ports/out/bookRepository.port';
 import { buildCacheKey } from '@utils/cacheKey.util';
+import type { IDeleteBookUseCase } from '@modules/book/application/ports/in/deleteBook.port';
 
 const CACHE_NAMESPACE = 'book';
 
 @Injectable()
-export class DeleteBookUseCase {
+export class DeleteBookUseCase implements IDeleteBookUseCase {
   constructor(
     @Inject(BOOK_REPOSITORY) private readonly bookRepository: IBookRepository,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,

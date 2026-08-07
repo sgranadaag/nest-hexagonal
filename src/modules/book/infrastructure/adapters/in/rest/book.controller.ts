@@ -5,26 +5,37 @@
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   ParseUUIDPipe,
   Post,
 } from '@nestjs/common';
-import { CreateBookUseCase } from '@modules/book/application/useCases/createBook.useCase';
-import { GetBookUseCase } from '@modules/book/application/useCases/getBook.useCase';
-import { GetBookByAuthorUseCase } from '@modules/book/application/useCases/getBookByAuthor.useCase';
-import { GetBookByLibraryUseCase } from '@modules/book/application/useCases/getBookByLibrary.useCase';
-import { DeleteBookUseCase } from '@modules/book/application/useCases/deleteBook.useCase';
+import { CREATE_BOOK_USE_CASE } from '@modules/book/application/ports/in/createBook.port';
+import type { ICreateBookUseCase } from '@modules/book/application/ports/in/createBook.port';
+import { GET_BOOK_USE_CASE } from '@modules/book/application/ports/in/getBook.port';
+import type { IGetBookUseCase } from '@modules/book/application/ports/in/getBook.port';
+import { GET_BOOK_BY_AUTHOR_USE_CASE } from '@modules/book/application/ports/in/getBookByAuthor.port';
+import type { IGetBookByAuthorUseCase } from '@modules/book/application/ports/in/getBookByAuthor.port';
+import { GET_BOOK_BY_LIBRARY_USE_CASE } from '@modules/book/application/ports/in/getBookByLibrary.port';
+import type { IGetBookByLibraryUseCase } from '@modules/book/application/ports/in/getBookByLibrary.port';
+import { DELETE_BOOK_USE_CASE } from '@modules/book/application/ports/in/deleteBook.port';
+import type { IDeleteBookUseCase } from '@modules/book/application/ports/in/deleteBook.port';
 import { CreateBookDto } from './dto/createBook.dto';
 import { BookResponseDto } from './dto/bookResponse.dto';
 
 @Controller('books')
 export class BookController {
   constructor(
-    private readonly createBookUseCase: CreateBookUseCase,
-    private readonly getBookUseCase: GetBookUseCase,
-    private readonly getBookByAuthorUseCase: GetBookByAuthorUseCase,
-    private readonly getBookByLibraryUseCase: GetBookByLibraryUseCase,
-    private readonly deleteBookUseCase: DeleteBookUseCase,
+    @Inject(CREATE_BOOK_USE_CASE)
+    private readonly createBookUseCase: ICreateBookUseCase,
+    @Inject(GET_BOOK_USE_CASE)
+    private readonly getBookUseCase: IGetBookUseCase,
+    @Inject(GET_BOOK_BY_AUTHOR_USE_CASE)
+    private readonly getBookByAuthorUseCase: IGetBookByAuthorUseCase,
+    @Inject(GET_BOOK_BY_LIBRARY_USE_CASE)
+    private readonly getBookByLibraryUseCase: IGetBookByLibraryUseCase,
+    @Inject(DELETE_BOOK_USE_CASE)
+    private readonly deleteBookUseCase: IDeleteBookUseCase,
   ) {}
 
   @Post()

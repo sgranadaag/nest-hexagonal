@@ -5,22 +5,29 @@
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   ParseUUIDPipe,
   Post,
 } from '@nestjs/common';
-import { CreateLibraryUseCase } from '@modules/library/application/useCases/createLibrary.useCase';
-import { GetLibraryUseCase } from '@modules/library/application/useCases/getLibrary.useCase';
-import { DeleteLibraryUseCase } from '@modules/library/application/useCases/deleteLibrary.useCase';
+import { CREATE_LIBRARY_USE_CASE } from '@modules/library/application/ports/in/createLibrary.port';
+import type { ICreateLibraryUseCase } from '@modules/library/application/ports/in/createLibrary.port';
+import { GET_LIBRARY_USE_CASE } from '@modules/library/application/ports/in/getLibrary.port';
+import type { IGetLibraryUseCase } from '@modules/library/application/ports/in/getLibrary.port';
+import { DELETE_LIBRARY_USE_CASE } from '@modules/library/application/ports/in/deleteLibrary.port';
+import type { IDeleteLibraryUseCase } from '@modules/library/application/ports/in/deleteLibrary.port';
 import { CreateLibraryDto } from './dto/createLibrary.dto';
 import { LibraryResponseDto } from './dto/libraryResponse.dto';
 
 @Controller('libraries')
 export class LibraryController {
   constructor(
-    private readonly createLibraryUseCase: CreateLibraryUseCase,
-    private readonly getLibraryUseCase: GetLibraryUseCase,
-    private readonly deleteLibraryUseCase: DeleteLibraryUseCase,
+    @Inject(CREATE_LIBRARY_USE_CASE)
+    private readonly createLibraryUseCase: ICreateLibraryUseCase,
+    @Inject(GET_LIBRARY_USE_CASE)
+    private readonly getLibraryUseCase: IGetLibraryUseCase,
+    @Inject(DELETE_LIBRARY_USE_CASE)
+    private readonly deleteLibraryUseCase: IDeleteLibraryUseCase,
   ) {}
 
   @Post()

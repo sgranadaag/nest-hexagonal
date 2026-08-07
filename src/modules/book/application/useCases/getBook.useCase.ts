@@ -1,14 +1,15 @@
-﻿import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Book } from '@modules/book/domain/entities/book.entity';
-import { BOOK_REPOSITORY } from '@modules/book/application/ports/bookRepository.interface';
-import type { IBookRepository } from '@modules/book/application/ports/bookRepository.interface';
+import { BOOK_REPOSITORY } from '@modules/book/application/ports/out/bookRepository.port';
+import type { IBookRepository } from '@modules/book/application/ports/out/bookRepository.port';
 import { buildCacheKey } from '@utils/cacheKey.util';
+import type { IGetBookUseCase } from '@modules/book/application/ports/in/getBook.port';
 
 const CACHE_NAMESPACE = 'book';
 
 @Injectable()
-export class GetBookUseCase {
+export class GetBookUseCase implements IGetBookUseCase {
   constructor(
     @Inject(BOOK_REPOSITORY) private readonly bookRepository: IBookRepository,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
