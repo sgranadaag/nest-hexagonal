@@ -80,6 +80,84 @@ This is why controllers map to/from DTOs at the boundary instead of passing
 dictating what `domain` needs to look like, and the dependency arrow would
 effectively reverse.
 
+## A request, end to end
+
+To make "the layers" concrete instead of abstract, here's what actually
+happens for `POST /libraries` today — and this is real, not aspirational:
+**PostgreSQL is the live, active, end-to-end implementation**, not a design
+on paper. Schema and seed data come from real migrations
+(`src/migrations/postgres/`), the binding below is what's actually checked
+into every aggregate's module right now, and both `npm run test:e2e` and
+`postman_collection.json` exercise this exact path against a real Postgres
+container.
+
+1. `LibraryController.createLibrary` (`infrastructure/adapters/in/rest/library.controller.ts`)
+   receives the HTTP request, the global `ValidationPipe` validates the body
+   against `CreateLibraryDto`, and the controller calls
+   `this.createLibraryUseCase.execute(dto.name, dto.address)`.
+   `createLibraryUseCase` is typed as `ICreateLibraryUseCase` — the
+   controller has never imported the concrete `CreateLibraryUseCase` class,
+   only its inbound port.
+2. NestJS resolves the `CREATE_LIBRARY_USE_CASE` token to the real
+   `CreateLibraryUseCase`. The only place that binding exists is
+   `library.module.ts`'s `providers` array.
+3. `CreateLibraryUseCase.execute()` (`application/useCases/createLibrary.useCase.ts`)
+   calls `Library.create(name, address)` — pure domain logic:
+   `LibraryId.create()` mints a UUID, `Address.create()` enforces
+   `isValid()`, no framework code, no I/O. It then calls
+   `this.libraryRepository.save(library)`, where `libraryRepository` is
+   typed as `ILibraryRepository` — the use case has never imported
+   `PostgresLibraryRepository`, only its outbound port.
+4. NestJS resolves the `LIBRARY_REPOSITORY` token to `PostgresLibraryRepository`
+   — again, only `library.module.ts` knows this.
+5. `PostgresLibraryRepository.save()` (`infrastructure/adapters/out/postgres/postgresLibrary.repository.ts`)
+   calls `PostgresLibraryMapper.toPersistence(library)` to get a
+   `PostgresLibraryEntity`, and the TypeORM `Repository<PostgresLibraryEntity>`
+   it injected issues the real `INSERT` against the `libraries` table the
+   migration created.
+6. The original domain `Library` — not the ORM entity — travels back up
+   through the use case to the controller, which maps it to
+   `LibraryResponseDto.fromDomain(library)` for the response body.
+
+Every arrow in that chain crosses an interface, never a concrete class.
+That's what makes both swaps below one-line changes instead of rewrites.
+
+## Swapping infrastructure adapters
+
+Ports are split by **direction** (`ports/in/` vs `ports/out/`) specifically
+so *either* side of a use case can be swapped independently — what triggers
+it, and what it persists to.
+
+**Outbound** — what persists an aggregate. Every module registers both
+implementations as providers; only one is bound to the port's token:
+
+```ts
+// library.module.ts
+providers: [
+  InMemoryLibraryRepository,                                              // registered, unbound
+  { provide: LIBRARY_REPOSITORY, useClass: PostgresLibraryRepository },   // ← the active one
+  { provide: CREATE_LIBRARY_USE_CASE, useClass: CreateLibraryUseCase },
+  // ...
+],
+```
+
+Switching back to in-memory (a demo with no Postgres available, a fast
+local run) is exactly one line: `useClass: PostgresLibraryRepository` →
+`useClass: InMemoryLibraryRepository`. Nothing else — not the use case, not
+the controller, not the unit tests that mock `ILibraryRepository` directly
+— needs to change. Adding `MongoLibraryRepository` later (see Roadmap)
+means writing that one class and adding one more line here; it's additive,
+never a refactor of existing code.
+
+**Inbound** — what triggers a use case. Today the only driving adapter is
+REST (`adapters/in/rest/`), but the mechanism is identical: `LibraryController`
+depends on `ICreateLibraryUseCase`, never on `CreateLibraryUseCase` directly.
+A CLI command, a queue consumer, or a GraphQL resolver added later would
+inject that exact same token and call `.execute(name, address)` — it would
+never need to know a REST controller exists, and the use case would never
+need to know it does either. Two input mechanisms could even run side by
+side, both driving the same use case instance through the same port.
+
 ## Aggregates and the bounded context
 
 `Library`, `Author`, and `Book` all live in one bounded context — this is a
