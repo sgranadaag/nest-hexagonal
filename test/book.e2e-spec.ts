@@ -1,8 +1,8 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { AppModule } from '../../src/app.module';
-import { HttpExceptionFilter } from '../../src/middlewares/httpException.filter';
+import { AppModule } from '../src/app.module';
+import { HttpExceptionFilter } from '../src/middlewares/httpException.filter';
 
 const NON_EXISTENT_ID = '00000000-0000-0000-0000-000000000000';
 

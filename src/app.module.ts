@@ -1,10 +1,7 @@
-import { join } from 'node:path';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { postgresConfig } from '@config/postgres.config';
 import { HealthModule } from './modules/health/health.module';
 import { LibraryModule } from './modules/library/library.module';
@@ -20,12 +17,6 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: postgresConfig,
-    }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      sortSchema: true,
-      includeStacktraceInErrorResponses: false,
     }),
     HealthModule,
     LibraryModule,

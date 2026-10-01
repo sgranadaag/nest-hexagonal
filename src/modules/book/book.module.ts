@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LibraryModule } from '@modules/library/library.module';
 import { AuthorModule } from '@modules/author/author.module';
 import { BookController } from './infrastructure/adapters/in/rest/book.controller';
-import { BookResolver } from './infrastructure/adapters/in/graphql/book.resolver';
 import { CreateBookUseCase } from './application/useCases/createBook.useCase';
 import { GetBookUseCase } from './application/useCases/getBook.useCase';
 import { GetBookByAuthorUseCase } from './application/useCases/getBookByAuthor.useCase';
@@ -27,7 +26,6 @@ import { DELETE_BOOK_USE_CASE } from './application/ports/in/deleteBook.port';
   ],
   controllers: [BookController],
   providers: [
-    BookResolver,
     InMemoryBookRepository,
     { provide: BOOK_REPOSITORY, useClass: PostgresBookRepository },
     { provide: CREATE_BOOK_USE_CASE, useClass: CreateBookUseCase },
