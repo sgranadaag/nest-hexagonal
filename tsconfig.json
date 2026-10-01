@@ -13,15 +13,14 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "paths": {
-      "@modules/*": ["src/modules/*"],
-      "@middlewares/*": ["src/middlewares/*"],
-      "@utils/*": ["src/utils/*"],
-      "@schemas/*": ["src/schemas/*"],
-      "@tests/*": ["src/tests/*"],
-      "@config/*": ["src/config/*"],
-      "@constants/*": ["src/constants/*"]
+      "@modules/*": ["./src/modules/*"],
+      "@middlewares/*": ["./src/middlewares/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@schemas/*": ["./src/schemas/*"],
+      "@tests/*": ["./src/tests/*"],
+      "@config/*": ["./src/config/*"],
+      "@constants/*": ["./src/constants/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LibraryController } from './infrastructure/adapters/in/rest/library.controller';
+import { LibraryResolver } from './infrastructure/adapters/in/graphql/library.resolver';
 import { CreateLibraryUseCase } from './application/useCases/createLibrary.useCase';
 import { GetLibraryUseCase } from './application/useCases/getLibrary.useCase';
 import { DeleteLibraryUseCase } from './application/useCases/deleteLibrary.useCase';
@@ -16,6 +17,7 @@ import { DELETE_LIBRARY_USE_CASE } from './application/ports/in/deleteLibrary.po
   imports: [TypeOrmModule.forFeature([PostgresLibraryEntity])],
   controllers: [LibraryController],
   providers: [
+    LibraryResolver,
     InMemoryLibraryRepository,
     { provide: LIBRARY_REPOSITORY, useClass: PostgresLibraryRepository },
     { provide: CREATE_LIBRARY_USE_CASE, useClass: CreateLibraryUseCase },

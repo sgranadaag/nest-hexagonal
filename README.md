@@ -208,13 +208,24 @@ So the use case fulfills the **inbound port** (it allows operations to be applie
 
 Up to this point we've already defined the domain (**who**) and the application (**what**); now we continue with the infrastructure (**how**) — the most external layer of our hexagon, the part that understands the actual technology being used and holds all the implementation details for it. Here we also define the outbound and inbound implementations, also called **adapters**. As inbound adapters, let's look at two examples:
 
-- **REST adapter** — the one actually implemented in this repo: a class with everything required to work over an HTTP API, which in turn uses the use cases through their specific contract. It's important to notice the controller knows exactly which use case implementation it's going to get through dependency injection, without being directly coupled to that implementation — that's where the power of this architecture shows up.
-- **GraphQL adapter** — a hypothetical example, not implemented here: suppose we wanted to expose the application through GraphQL as well. We'd just define another class, a GraphQL controller, with its own implementation to expose GraphQL to the client. It would still only need to use the use cases (really, just their contracts) without changing any business logic or affecting the other layers — that's exactly why this architecture is worth it.
+- **REST adapter** — a class with everything required to work over an HTTP API, which in turn uses the use cases through their specific contract. It's important to notice the controller knows exactly which use case implementation it's going to get through dependency injection, without being directly coupled to that implementation — that's where the power of this architecture shows up.
+- **GraphQL adapter** — another class exposing the application through GraphQL, a GraphQL controller with its own implementation to serve the client over that protocol. It still only needs the use cases (really, just their contracts), without changing any business logic or affecting the other layers — that's exactly why this architecture is worth it: the same use case now serves two protocols side by side.
 
-Now we're just missing the outbound implementations (**outbound adapters**) — the repositories. Each repository has the responsibility of following the repository contract and providing its own specific implementation. Right now that's **Postgres** (the active one) and **in-memory** (kept registered for tests), with **Mongo** planned as the next one to add. The power here is that switching between them costs very little: change which class the module binds to the repository token, and that's it — everything else stays untouched. If the DB engine ever needs to change or be upgraded, it only affects that specific implementation, nothing else. With this, our whole application is fully defined. 
+Now we're just missing the outbound implementations (**outbound adapters**) — the repositories. Each repository has the responsibility of following the repository contract and providing its own specific implementation:
+
+- **Postgres repository** — the active one, backing every aggregate through TypeORM.
+- **In-memory repository** — kept registered for tests, following the same contract without touching a real database.
+- **Mongo repository** — following that same contract with its own MongoDB-specific implementation.
+
+The power here is that switching between them costs very little: change which class the module binds to the repository token, and that's it — everything else stays untouched. If the DB engine ever needs to change or be upgraded, it only affects that specific implementation, nothing else. With this, our whole application is fully defined. 
+
+## Testing
+
+Testing is another important part of this implementation — it's how we make sure our business logic behaves exactly the way we expect. The **hexagonal architecture** helps us again here: since the domain and the business rules are fully decoupled from any specific technology, we only need to test those specific parts — basically the **domain** and **application** layers.
+
+This is really valuable, because it makes testing our application straightforward and helps us follow the correct implementation for each part of the system. The clear separation of responsibilities also makes it easy to understand *why* we test what we test: the parts that hold business rules get tested directly, while the parts that are just technology glue (controllers, resolvers, repositories) get exercised indirectly instead, through the same operations a real client would perform against them.
 
 ## Code Implementation
-
 At this point we've already walked through all of our requirements — we planned and defined the architecture, the class diagrams, and the implementation shape. At that point, I leaned on **Claude** to implement everything, and it was really easy: I just needed to lay out my design and my structure, and Claude coded everything else. So here it's worth highlighting the importance of **thinking before you start coding** — with all of these questions already answered, Claude only needed a few minutes to put everything together, and the result is, in my opinion, a very professional implementation that followed and showed exactly what I needed. I just had to correct a few parts and guide it through the process, but it was really satisfying to see the results.
 
 I hope this repo helps you understand, in a real way, how this architecture works, why it's so powerful, and the importance of thinking — in a world where coding itself is becoming less important every day.

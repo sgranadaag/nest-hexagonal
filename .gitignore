@@ -83,6 +83,9 @@ web_modules/
 dist
 .output
 
+# Nest GraphQL auto-generated schema
+src/schema.gql
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js

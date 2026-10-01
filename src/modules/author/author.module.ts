@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthorController } from './infrastructure/adapters/in/rest/author.controller';
+import { AuthorResolver } from './infrastructure/adapters/in/graphql/author.resolver';
 import { CreateAuthorUseCase } from './application/useCases/createAuthor.useCase';
 import { GetAuthorUseCase } from './application/useCases/getAuthor.useCase';
 import { DeleteAuthorUseCase } from './application/useCases/deleteAuthor.useCase';
@@ -16,6 +17,7 @@ import { DELETE_AUTHOR_USE_CASE } from './application/ports/in/deleteAuthor.port
   imports: [TypeOrmModule.forFeature([PostgresAuthorEntity])],
   controllers: [AuthorController],
   providers: [
+    AuthorResolver,
     InMemoryAuthorRepository,
     { provide: AUTHOR_REPOSITORY, useClass: PostgresAuthorRepository },
     { provide: CREATE_AUTHOR_USE_CASE, useClass: CreateAuthorUseCase },
