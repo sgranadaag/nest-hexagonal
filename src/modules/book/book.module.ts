@@ -1,22 +1,15 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { LibraryModule } from '@modules/library/library.module';
 import { AuthorModule } from '@modules/author/author.module';
-import { BookController } from './infrastructure/adapters/in/rest/book.controller';
-import { CreateBookUseCase } from './application/useCases/createBook.useCase';
-import { GetBookUseCase } from './application/useCases/getBook.useCase';
-import { GetBookByAuthorUseCase } from './application/useCases/getBookByAuthor.useCase';
-import { GetBookByLibraryUseCase } from './application/useCases/getBookByLibrary.useCase';
-import { DeleteBookUseCase } from './application/useCases/deleteBook.useCase';
-import { InMemoryBookRepository } from './infrastructure/adapters/out/inMemory/inMemoryBook.repository';
-import { PostgresBookEntity } from './infrastructure/adapters/out/postgres/postgresBook.entity';
-import { PostgresBookRepository } from './infrastructure/adapters/out/postgres/postgresBook.repository';
-import { BOOK_REPOSITORY } from './application/ports/out/bookRepository.port';
-import { CREATE_BOOK_USE_CASE } from './application/ports/in/createBook.port';
-import { GET_BOOK_USE_CASE } from './application/ports/in/getBook.port';
-import { GET_BOOK_BY_AUTHOR_USE_CASE } from './application/ports/in/getBookByAuthor.port';
-import { GET_BOOK_BY_LIBRARY_USE_CASE } from './application/ports/in/getBookByLibrary.port';
-import { DELETE_BOOK_USE_CASE } from './application/ports/in/deleteBook.port';
+import { BookController } from './infrastructure/book.controller';
+import { BookService } from './application/book.service';
+import { PostgresBookEntity } from './infrastructure/adapters/postgresBook.entity';
+import { PostgresBookAdapter } from './infrastructure/adapters/postgresBook.adapter';
+import { CachedBookDecorator } from './infrastructure/adapters/cachedBook.decorator';
+import { BOOK_REPOSITORY } from './application/ports/bookRepository.port';
+import type { BookRepositoryPort } from './application/ports/bookRepository.port';
 
 @Module({
   imports: [
@@ -26,16 +19,14 @@ import { DELETE_BOOK_USE_CASE } from './application/ports/in/deleteBook.port';
   ],
   controllers: [BookController],
   providers: [
-    InMemoryBookRepository,
-    { provide: BOOK_REPOSITORY, useClass: PostgresBookRepository },
-    { provide: CREATE_BOOK_USE_CASE, useClass: CreateBookUseCase },
-    { provide: GET_BOOK_USE_CASE, useClass: GetBookUseCase },
-    { provide: GET_BOOK_BY_AUTHOR_USE_CASE, useClass: GetBookByAuthorUseCase },
+    BookService,
+    PostgresBookAdapter,
     {
-      provide: GET_BOOK_BY_LIBRARY_USE_CASE,
-      useClass: GetBookByLibraryUseCase,
+      provide: BOOK_REPOSITORY,
+      inject: [PostgresBookAdapter, CACHE_MANAGER],
+      useFactory: (adapter: BookRepositoryPort, cache: Cache) =>
+        new CachedBookDecorator(adapter, cache),
     },
-    { provide: DELETE_BOOK_USE_CASE, useClass: DeleteBookUseCase },
   ],
   exports: [BOOK_REPOSITORY],
 })

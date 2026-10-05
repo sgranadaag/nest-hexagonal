@@ -1,4 +1,4 @@
-import { Book } from '@modules/book/domain/entities/book.entity';
+import { Book } from '@modules/book/domain/book.entity';
 
 describe('Book', () => {
   it('creates a book with a generated id, referencing its author and library by id', () => {

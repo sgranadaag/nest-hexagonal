@@ -1,4 +1,4 @@
-import { Library } from '@modules/library/domain/entities/library.entity';
+import { Library } from '@modules/library/domain/library.entity';
 
 describe('Library', () => {
   it('creates a library with a generated id', () => {

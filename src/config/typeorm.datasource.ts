@@ -9,6 +9,6 @@ export const AppDataSource = new DataSource({
   username: process.env[ENV.DATABASE_USER],
   password: process.env[ENV.DATABASE_PASSWORD],
   database: process.env[ENV.DATABASE_NAME],
-  entities: ['src/modules/**/infrastructure/adapters/out/postgres/*.entity.ts'],
+  entities: ['src/modules/**/infrastructure/adapters/*.entity.ts'],
   migrations: ['src/migrations/postgres/*.ts'],
 });

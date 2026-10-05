@@ -1,8 +1,10 @@
-# nest-hexagonal — pure hexagonal implementation
+# nest-hexagonal — pragmatic hexagonal implementation
 
 > This explanation about the architecture is the same as described in the main branch — if you've already read it, you can skip ahead to the [Design Process](#design-process) section, where we'll talk about the specific implementation of this branch.
 
-This repo is a pure implementation of a **hexagonal architecture**, following the standards and principles of **clean code**. The main purpose of this repository is to work as a template of a hexagonal implementation and to guide people through hexagonal concepts.
+This repo is an implementation of a **hexagonal architecture**, following the standards and principles of **clean code**. The main purpose of this repository is to work as a template of a hexagonal implementation and to guide people through hexagonal concepts.
+
+This branch, specifically, is **not a pure implementation**: it trades some of the ceremony of the pure version for a structure closer to how a real project would be composed and maintained by a team. Even so, the separation of responsibilities is still the one hexagonal architecture defines, and dependency injection and inversion are still what drives the whole flow — the [Design Process](#design-process) section explains exactly what changed and what was kept.
 
 Following the documentation and the different theoretical approaches out there, it's easy to get confused, because hexagonal architecture breaks with many traditional architectures and concepts.
 
@@ -181,12 +183,30 @@ It's basically a **layered architecture that wraps the hexagonal definition**.
 
 Something important here is the **module distribution**: the hexagonal architecture layers are separated into specific **modules** — one per business unit — and each module is composed of the same folder distribution (`domain`/`application`/`infrastructure`). So, if the business decides to create a new unit — suppose they want to manage newspapers, not just books — that implies creating a new entity and connecting it with the existing layers. In terms of implementation, that just means creating a new **module**, with its own specific folders, and adding its logic — without the need to touch the other modules. That way, our system can grow in a very **scalable** way.
 
-It's also important to see that this design follows a **pure implementation** of hexagonal architecture. That's why I decided to split **ports** and **adapters** by two levels:
+The diagram shows the **pure** design, where ports and adapters are split by two levels: **direction first** (inbound/driving vs. outbound/driven) and **technology second** (`postgres/`, `rest/`...). That double split is the most explicit way to show the architecture, but in a real-world project it can be simplified to avoid making it too complex for the team — and that's exactly what this branch does. Each module now looks like this:
 
-1. **Direction first** — every port and adapter is separated into **inbound** (driving, e.g. a REST controller) and **outbound** (driven, e.g. a database repository).
-2. **Technology second** — underneath that direction split, each side is divided again by protocol or technology (e.g. `postgres/`, `inMemory/`, `rest/`).
+```
+<module>/
+├── domain/
+│   ├── <name>.entity.ts        # the Aggregate Root
+│   └── valueObjects/
+├── application/
+│   ├── <name>.service.ts       # all the business logic of the aggregate
+│   └── ports/                  # contracts the application needs from the outside (the repository)
+├── infrastructure/
+│   ├── <name>.controller.ts    # REST entry point
+│   ├── dto/                    # request/response shapes
+│   └── adapters/               # ONLY classes that implement a port: postgres<Name>.adapter.ts (+ its ORM entity and mapper),
+│                               # and decorators that wrap one, like cachedBook.decorator.ts
+└── <name>.module.ts            # composition root: decides which implementation fulfils each port
+```
 
-This double split could be simplified in a real-world use case, just to avoid making the architecture too complex for the team. The other layers, in general, follow the **described pattern**, so it's important to fit the implementation to this structure — each layer already has its own **responsibility**, and the separation helps you describe the specific boundaries.
+The folders are flatter, but the **responsibilities are still divided exactly as hexagonal architecture determines**:
+
+- **Domain** still holds only entities and value objects — no framework, no persistence, no knowledge of anything outside it.
+- **Application** still holds the business rules and the contracts (ports) it needs from the outside world. It never knows which database, cache, or protocol is behind them.
+- **Infrastructure** still holds every technology detail: the REST controller and its DTOs, the Postgres adapter with its ORM entity and mapper, and the cache.
+- The dependency direction is still the same: **infrastructure → application → domain**, never the other way around.
 
 ### Class Diagram
 
@@ -202,28 +222,66 @@ Now that we've gone deep into the domain communication, all of our entities exis
 
 ![Class diagram](docs/class.diagram.png)
 
-There's a lot going on here. In the application, we defined the **use cases** — a use case tells us what we're allowed to do over our domain. Each use case follows its own contract, but both the contract and its implementation are part of the application layer, and together they play the role of a **port**. The idea behind abstracting each use case is to let us apply specific changes to it without directly affecting the classes that use it. For example, controllers use the use cases, but never directly — always through their contract. If something inside a use case needs to change, or we need to extend its behavior with a decorator, we can do that directly over the use case's implementation without touching the contract — which means we don't need to touch the external classes, the controller in this case.
+This diagram also represents the **pure** design: one **use case** per operation, each behind its own contract (an **inbound port**), with the controller depending on those contracts. In this branch, the application layer is simplified in two ways:
 
-So the use case fulfills the **inbound port** (it allows operations to be applied over our domain). Next, we need to define the **outbound ports** — in this case, the repositories. Here we establish the contract for persisting data through an external technology. For the application layer, the specific technology doesn't matter at all — only the kind of operation does, in this case the common DB operations (save, find, delete).
+- **Services instead of use cases.** Each aggregate has a single service (`LibraryService`, `AuthorService`, `BookService`) holding all of its operations as methods (`create`, `get`, `delete`, `getByAuthor`...). The service is still where the business rules live — for example, `BookService.create` checks that the library and the author exist before creating the book — it's just one class per aggregate instead of one class per operation.
+- **No inbound ports.** The controller depends on the service directly. In a real project with a single entry point (REST), a contract per operation adds files without a second implementation to justify them. If another driving adapter appears (GraphQL, a CLI, a queue consumer), it simply uses the same service — and if we ever need to swap the service itself, the contract can be reintroduced at that point.
 
-Up to this point we've already defined the domain (**who**) and the application (**what**); now we continue with the infrastructure (**how**) — the most external layer of our hexagon, the part that understands the actual technology being used and holds all the implementation details for it. Here we also define the outbound and inbound implementations, also called **adapters**. As inbound adapters, let's look at two examples:
+What we did **not** simplify are the **outbound ports**: the repositories. This is where the application meets a technology, so the contract stays. `application/ports/` defines what the application needs to persist (save, find, delete...), and the specific technology doesn't matter to it at all.
 
-- **REST adapter** — the one actually implemented in this repo: a class with everything required to work over an HTTP API, which in turn uses the use cases through their specific contract. It's important to notice the controller knows exactly which use case implementation it's going to get through dependency injection, without being directly coupled to that implementation — that's where the power of this architecture shows up.
-- **GraphQL adapter** — a hypothetical example, not implemented here: suppose we wanted to expose the application through GraphQL as well. We'd just define another class, a GraphQL controller, with its own implementation to expose GraphQL to the client. It would still only need to use the use cases (really, just their contracts) without changing any business logic or affecting the other layers — that's exactly why this architecture is worth it.
+Up to this point we've already defined the domain (**who**) and the application (**what**); now we continue with the infrastructure (**how**) — the most external layer of our hexagon, the part that understands the actual technology being used and holds all the implementation details for it:
 
-Now we're just missing the outbound implementations (**outbound adapters**) — the repositories. Each repository has the responsibility of following the repository contract and providing its own specific implementation:
+- **REST controller** — the driving side: a class with everything required to work over an HTTP API, which receives requests, validates DTOs, and calls the service. Conceptually it's still the inbound adapter of the hexagon; it just lives directly in `infrastructure/` instead of an `adapters/in/rest/` folder.
+- **Adapters** — the driven side: in this branch, `adapters/` holds **only** classes that implement a port. `PostgresBookAdapter` implements `BookRepositoryPort` through TypeORM, together with its ORM entity (the row shape) and its mapper (row ↔ domain conversion). A Mongo adapter, for example, would just be another file in the same folder implementing the same port.
+- **Decorators** — classes that wrap an adapter to add behavior on top of it, without the adapter or the service knowing. They also implement the port, so they live in `adapters/` as well, marked with the `.decorator.ts` suffix. Today there's one: the cache for books (see [Decorators](#decorators) below).
 
-- **Postgres repository** — the active one, backing every aggregate through TypeORM.
-- **In-memory repository** — kept registered for tests, following the same contract without touching a real database.
-- **Mongo repository** — following that same contract with its own MongoDB-specific implementation.
+The power here is still the same: switching between implementations costs very little — change what the module binds to the repository token, and that's it. If the DB engine ever needs to change or be upgraded, it only affects that specific adapter, nothing else.
 
-The power here is that switching between them costs very little: change which class the module binds to the repository token, and that's it — everything else stays untouched. If the DB engine ever needs to change or be upgraded, it only affects that specific implementation, nothing else. With this, our whole application is fully defined. 
+### Dependency Injection and Inversion
+
+Removing the use-case contracts doesn't remove the dependency inversion — it's still there, exactly where it matters most: at the edge between the business rules and the technology.
+
+```
+BookController ──▶ BookService ──▶ BookRepositoryPort   (port, owned by the application)
+                                          ▲
+                                          │ implements
+                      CachedBookDecorator ──wraps──▶ PostgresBookAdapter
+```
+
+- `BookService` depends on `BookRepositoryPort`, an interface that lives in its own layer, injected through the `BOOK_REPOSITORY` token. It never imports Postgres, TypeORM, or the cache.
+- `PostgresBookAdapter` and `CachedBookDecorator` depend **inward**: they implement the application's port. The application defines the contract; the infrastructure obeys it — that's the inversion.
+- `book.module.ts` is the **composition root**: the only place that knows the concrete classes and how they're put together.
+
+```ts
+providers: [
+  BookService,
+  PostgresBookAdapter,
+  {
+    provide: BOOK_REPOSITORY,
+    inject: [PostgresBookAdapter, CACHE_MANAGER],
+    useFactory: (adapter: BookRepositoryPort, cache: Cache) =>
+      new CachedBookDecorator(adapter, cache),
+  },
+],
+```
+
+So the flow of control goes from the outside in (controller → service → port), while the source-code dependencies always point to the center. That's the core promise of the hexagon, and this branch keeps it intact.
+
+### Decorators
+
+Caching is a good example of something that **looks like** application logic but is really a technology decision: if tomorrow we want Redis instead of an in-memory store, the business rules shouldn't change. That's why the cache doesn't live in the service — it's implemented with the **Decorator** pattern (from the GoF *Design Patterns* book):
+
+- `CachedBookDecorator` implements `BookRepositoryPort` and wraps **another** `BookRepositoryPort`. It depends only on the port, never on the Postgres adapter, so it can wrap any implementation — and it can be stacked with other decorators (logging, metrics, retries...).
+- `find(id)` reads through the cache; `save()` and `delete()` evict the entry. The cache stores a plain snapshot of primitives, never the domain object, and rebuilds the `Book` on a hit — so any serializing store (like Redis) works without changes.
+- It's applied **only to `Book`** — caching is a per-module decision made in the module, not a global rule. `Library` and `Author` bind their token straight to the Postgres adapter.
+
+Decorators live in `adapters/`, next to the adapters they wrap, on purpose: a decorator **implements the same port**, so from the hexagon's point of view it is one more adapter — the application can't tell them apart. What changes is its role, and the `.decorator.ts` suffix (instead of `.adapter.ts`) makes that visible: an **adapter** implements a port against a technology; a **decorator** only wraps whatever implements that port.
 
 ## Testing
 
-Testing is another important part of this implementation — it's how we make sure our business logic behaves exactly the way we expect. The **hexagonal architecture** helps us again here: since the domain and the business rules are fully decoupled from any specific technology, we only need to test those specific parts — basically the **domain** and **application** layers.
+Testing is another important part of this implementation — it's how we make sure our business logic behaves exactly the way we expect. The **hexagonal architecture** helps us again here: since the domain and the business rules are fully decoupled from any specific technology, we only need to test those specific parts — basically the **domain** (entities and value objects) and **application** (services) layers. Since every service depends on a port instead of a concrete adapter, its tests just pass a mocked repository — no database, no cache, no framework.
 
-This is really valuable, because it makes testing our application straightforward and helps us follow the correct implementation for each part of the system. The clear separation of responsibilities also makes it easy to understand *why* we test what we test: the parts that hold business rules get tested directly, while the parts that are just technology glue (controllers, repositories) get exercised indirectly instead, through the same operations a real client would perform against them.
+This is really valuable, because it makes testing our application straightforward and helps us follow the correct implementation for each part of the system. The clear separation of responsibilities also makes it easy to understand *why* we test what we test: the parts that hold business rules get tested directly, while the parts that are just technology glue (controllers, adapters, decorators) get exercised indirectly instead, through the same operations a real client would perform against them.
 
 ## Code Implementation
 At this point we've already walked through all of our requirements — we planned and defined the architecture, the class diagrams, and the implementation shape. At that point, I leaned on **Claude** to implement everything, and it was really easy: I just needed to lay out my design and my structure, and Claude coded everything else. So here it's worth highlighting the importance of **thinking before you start coding** — with all of these questions already answered, Claude only needed a few minutes to put everything together, and the result is, in my opinion, a very professional implementation that followed and showed exactly what I needed. I just had to correct a few parts and guide it through the process, but it was really satisfying to see the results.

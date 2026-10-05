@@ -1,4 +1,4 @@
-import { Author } from '@modules/author/domain/entities/author.entity';
+import { Author } from '@modules/author/domain/author.entity';
 
 describe('Author', () => {
   it('creates an author with a generated id', () => {
