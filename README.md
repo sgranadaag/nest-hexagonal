@@ -4,10 +4,13 @@ This repo is a pure implementation of a **hexagonal architecture**, following th
 
 Following the documentation and the different theoretical approaches out there, it's easy to get confused, because hexagonal architecture breaks with many traditional architectures and concepts.
 
-The repo is going to be branched into two initial implementations:
+The repo is branched into different implementations of the same example:
 
-- **stable/monolith**: this branch will be a complete end-to-end (E2E) design of an example service connected to a Postgres DB.
+- **stable/monolith**: a complete end-to-end (E2E) design of an example service connected to a Postgres DB, following a **pure** hexagonal implementation.
+- **stable/main**: a **light** version of the monolith, meant to show a **realistic** implementation — closer to how a real project would be composed by a team. It drops some of the ceremony of the pure version (one service per aggregate instead of one use case per operation, no inbound ports, a flatter folder structure), but the separation of responsibilities is still the one hexagonal architecture defines.
 - **stable/microservice**: this will be an implementation of three different microservices, each one following the hexagonal definition, using the same example as the monolith implementation.
+
+> If you're new to hexagonal architecture, start with **stable/monolith** to see every concept explicitly, then compare it with **stable/main** to see which parts can be relaxed in a real project and which ones can't.
 
 ---
 
